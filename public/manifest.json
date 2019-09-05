@@ -1,0 +1,21 @@
+{
+  "short_name": "familyWeather+",
+  "name": "familyWeather+",
+  "description": "A weather app to make you feel closer to your loved ones, wherever they are!", 
+  "icons": [
+      {
+          "src": "/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+      },
+      {
+          "src": "/android-chrome-512x512.png",
+          "sizes": "512x512",
+          "type": "image/png"
+      }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

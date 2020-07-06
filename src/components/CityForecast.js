@@ -10,8 +10,7 @@ import MoreInfo from "./MoreInfo";
 
 
 const CityForecast = props => {
-
-	const { city } = props;
+	const { city, insertWeatherData, insertImageData } = props;
 
 	// Fetch forecast data w custom hook
 	const url = city.countryCode !== ""
@@ -21,9 +20,7 @@ const CityForecast = props => {
 		`https://api.openweathermap.org/data/2.5/forecast?q=${city.name}&APPID=6c2959ac5f06da24a0df472b94e4fd35`;
 
 	const [isLoading, forecastData, error] = useHttp(url, []);
-	const [currentData, setCurrentData] = useState(0); 
-
-	
+  const [currentData, setCurrentData] = useState(0); 
 
 // Placing data in array of objects 
 	const cityData = city.weatherData
@@ -53,22 +50,16 @@ const CityForecast = props => {
 			weatherData[currentData]
 			:
 			null;
-
-	// useEffect(() => {
-	// 	if (city.weatherData) console.log("currentWeather", currentWeather);
-	// }, [city.weatherData]);
 	
 
-
-	// insert data in city list object
 	useEffect(() => {
-		if (forecastData) props.insertWeatherData(props.city, forecastData);
-	}, [forecastData]);
+    if (forecastData) insertWeatherData(city, forecastData);
+  }, [forecastData, insertWeatherData, city]);
 
 
 	// TO FETCH PICTURE - TeleportAPI (using same custom hook)
-	const formattedCityName = city.name.split(" ").join("-").toLowerCase();
-	const urlPicture = `https://api.teleport.org/api/urban_areas/slug:${formattedCityName}/images/`; // if city has custom image, don't search
+	// const formattedCityName = city.name.split(" ").join("-").toLowerCase();
+	// const urlPicture = `https://api.teleport.org/api/urban_areas/slug:${formattedCityName}/images/`; // if city has custom image, don't search
 	
 
 	// FETCH PICTURE WITH NEW CUSTOM HOOK, conditionally defined if city has already an image or not (or is in starting stock)!
@@ -79,8 +70,8 @@ const CityForecast = props => {
 	// Send the image URL to cities array of objects, and will be static background, 
 	// Do this only if its pictureUrl changes
 	useEffect(() => {
-		props.insertImageData(props.city, pictureUrl);
-	}, [pictureUrl]);
+		insertImageData(city, pictureUrl);
+	}, [pictureUrl, city, insertImageData]);
 
 
 
@@ -129,58 +120,106 @@ const CityForecast = props => {
 	}
 
 
-	return (
-		!isLoading && forecastData && !error      
-		? 
-		<div 
-			className={`forecast ${city.name}`} 
-			style={!city.startingStock && props.city.imageUrl ? {backgroundImage: `url(${props.city.imageUrl})`} : null }
-			draggable
-			onDragStart={(e) => onDragStart(e, city.name)}
-			onDragOver={(e) => onDragOver(e)} 
-			onDrop={(e) => onDrop(e)}
-			onClick={props.closeSearchBar}
-		>
-			{ moreInfo 
-				?  
-				<MoreInfo city={city} closeMoreInfo={closeMoreInfo} changeBackgroundPic={props.changeBackgroundPic} />
-				:
-				<div className="actualForecast" onTouchStart={(e) => console.log("touching!", e)}>
-					
-					<div className="clickable-arrow left-arrow" onClick={moveBackward}>
-						{ currentData !== 0 &&
-							<FontAwesomeIcon icon="chevron-circle-left" size="2x" className="chevron" />
-						}
-					</div>	
-					<div className="details">
-						<h1>{cityData.name.toUpperCase()}, {cityData.country.toUpperCase()}</h1>
-						<p className="icon"><img alt="weather conditions" src={ require(`../images/weather-icons/${currentWeather.weather[0].id}.png`) } /></p>
-						<p className="forecast-summary"><FontAwesomeIcon icon="thermometer-full" /> { convertToCelsius(currentWeather.main.temp) }° - {currentWeather.weather[0].description.toUpperCase()}</p>
-						<p><FontAwesomeIcon icon="wind" /> { calculateWind(currentWeather.wind.speed) }KN <FontAwesomeIcon icon="arrow-down" transform={{ rotate: currentWeather.wind.deg }} /></p>
-						<p className="date-details"><FontAwesomeIcon icon="calendar-week" /> { formatDate(currentWeather.date).date } &nbsp; <FontAwesomeIcon icon="clock" /> { formatDate(currentWeather.date).hour }:00h</p>
-					</div>	
-					<div className="clickable-arrow right-arrow" onClick={moveForward}>
-						{ currentData < 39 &&
-						<FontAwesomeIcon icon="chevron-circle-right" size="2x" className="chevron" />
-						}
-					</div>	
-					<FontAwesomeIcon icon="times-circle" onClick={() => props.removeCity(city.name.toLowerCase())} size="lg" className="close-window" />
-					<FontAwesomeIcon icon="plus-circle" size="lg" className="open-details" onClick={() => setMoreInfo(true)} />
-				</div>
-			}
-
-		</div>
-		:
-		isLoading && !error
-		?
-		<Loading />		
-		:
-		error
-		?
-		<ErrorBox error={error} />
-		:
-		null
-	)
+	return !isLoading && forecastData && !error ? (
+    <div
+      className={`forecast ${city.name}`}
+      style={
+        !city.startingStock && props.city.imageUrl
+          ? { backgroundImage: `url(${props.city.imageUrl})` }
+          : null
+      }
+      draggable
+      onDragStart={e => onDragStart(e, city.name)}
+      onDragOver={e => onDragOver(e)}
+      onDrop={e => onDrop(e)}
+      onClick={props.closeSearchBar}
+    >
+      {moreInfo ? (
+        <MoreInfo
+          city={city}
+          closeMoreInfo={closeMoreInfo}
+          changeBackgroundPic={props.changeBackgroundPic}
+        />
+      ) : (
+        <div
+          className="actualForecast"
+          onTouchStart={e => console.log("touching!", e)}
+        >
+          <div className="clickable-arrow left-arrow" onClick={moveBackward}>
+            {currentData !== 0 && (
+              <FontAwesomeIcon
+                icon="chevron-circle-left"
+                size="2x"
+                className="chevron"
+                style={{ cursor: "pointer" }}
+              />
+            )}
+          </div>
+          <div className="details">
+            <h1>
+              {cityData.name.toUpperCase()}, {cityData.country.toUpperCase()}
+            </h1>
+            <p className="icon">
+              <img
+                alt="weather conditions"
+                src={require(`../images/weather-icons/${currentWeather.weather[0].id}.png`)}
+              />
+            </p>
+            <p className="forecast-summary">
+              <FontAwesomeIcon icon="thermometer-full" />{" "}
+              {convertToCelsius(currentWeather.main.temp)}° -{" "}
+              {currentWeather.weather[0].description.toUpperCase()}
+            </p>
+            <p>
+              <FontAwesomeIcon icon="wind" />{" "}
+              {calculateWind(currentWeather.wind.speed)}KN{" "}
+              <FontAwesomeIcon
+                icon="arrow-down"
+                transform={{ rotate: currentWeather.wind.deg }}
+              />
+            </p>
+            <p className="date-details">
+              <FontAwesomeIcon icon="calendar-week" />{" "}
+              {formatDate(currentWeather.date).date} &nbsp;{" "}
+              <FontAwesomeIcon icon="clock" />{" "}
+              {formatDate(currentWeather.date).hour}:00h
+            </p>
+          </div>
+          <div
+            className="clickable-arrow right-arrow"
+            onClick={moveForward}
+            style={{ cursor: "pointer" }}
+          >
+            {currentData < 39 && (
+              <FontAwesomeIcon
+                icon="chevron-circle-right"
+                size="2x"
+                className="chevron"
+              />
+            )}
+          </div>
+          <FontAwesomeIcon
+            icon="times-circle"
+            onClick={() => props.removeCity(city.name.toLowerCase())}
+            size="lg"
+            className="close-window"
+            style={{ cursor: "pointer" }}
+          />
+          <FontAwesomeIcon
+            icon="plus-circle"
+            size="lg"
+            className="open-details"
+            onClick={() => setMoreInfo(true)}
+            style={{ cursor: "pointer" }}
+          />
+        </div>
+      )}
+    </div>
+  ) : isLoading && !error ? (
+    <Loading />
+  ) : error ? (
+    <ErrorBox error={error} />
+  ) : null;
 }
 
 export default CityForecast;

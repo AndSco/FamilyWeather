@@ -12,7 +12,7 @@ const AddCity = props => {
 			onClick={props.openForm}
 			ref={(div) => {lastDiv = div}}
 		>
-			<h1>+</h1>
+			<h1 style={{cursor: "pointer"}}>+</h1>
 		</div>
 	)
 

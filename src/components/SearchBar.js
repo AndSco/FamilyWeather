@@ -13,14 +13,6 @@ const SearchBar = props => {
 		setPlaceToSearch(e.target.value);
 	}
 
-	// const startAutoComplete = () => {
-	// 	const filteredResults = filterCityList(placeToSearch, props.cityList);
-	// 	const uniqueResults = removeCityDuplicates(filteredResults);
-	// 	// console.log("uniqueResults", uniqueResults);
-	// 	return uniqueResults;
-	// }
-
-
 	useEffect(() => {
 		if (placeToSearch.length > 2) {
 			const filteredResults = filterCityList(placeToSearch, props.cityList);
@@ -32,9 +24,6 @@ const SearchBar = props => {
 			}
 	}, [placeToSearch, props.cityList]); // more deps to satisfy hooks rule
 
-	// useEffect(() => console.log("MATCHES", matches), [matches]);
-
-	// console.log(props.cityList);
 
 	return (
 		<div>

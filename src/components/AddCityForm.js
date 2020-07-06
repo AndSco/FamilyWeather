@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { filterCityList } from "../helper-functions/functions";
 import { removeCityDuplicates } from "../helper-functions/functions";
 import Autocompletion from "./Autocompletion";
@@ -6,23 +6,19 @@ import Autocompletion from "./Autocompletion";
 const AddCityForm = props => {
 
 	const [cityName, setCityName] = useState("");
-	// const [countryCode, setCountryCode] = useState("");
-	// const [moreDetails, setMoreDetails] = useState(false);
-
-	const [matches, setMatches] = useState([]);
-
+  const [matches, setMatches] = useState([]);
+  const {cityList} = props;
 
 	const handleChange = (e) => {
 		setCityName(e.target.value)
 	}
 
 
-	const startAutoComplete = () => {
-		const filteredResults = filterCityList(cityName, props.cityList);
+	const startAutoComplete = useCallback(() => {
+		const filteredResults = filterCityList(cityName, cityList);
 		const uniqueResults = removeCityDuplicates(filteredResults);
-		// console.log("uniqueResults", uniqueResults);
 		return uniqueResults;
-	}
+	}, [cityName, cityList])
 
 
 	useEffect(() => {
@@ -31,10 +27,9 @@ const AddCityForm = props => {
 		} else {
 			setMatches([]);
 		}
-	}, [cityName])
+	}, [cityName, startAutoComplete])
 
 
-	// useEffect(() => console.log("matches", matches), [matches]);
 
 	return (
 		<div className="forecast add-city-form">

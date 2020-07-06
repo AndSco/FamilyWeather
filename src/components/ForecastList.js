@@ -6,8 +6,6 @@ import AddCityForm from "./AddCityForm";
 import Introduction from "./Introduction";
 import SearchBar from "./SearchBar";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { sortByCold } from "../helper-functions/functions";
-
 
 const ForecastList = props => {
 
@@ -164,7 +162,6 @@ const ForecastList = props => {
 
 		const citiesWithoutRain = cities.filter(city => city.weatherData.list[0].rain == undefined);
 		const sortedList = [...citiesWithRain, ...citiesWithoutRain];
-		console.log("SORTED BY RAIN", sortedList);
 		setCities(sortedList);
 	}
 

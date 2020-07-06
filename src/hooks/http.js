@@ -15,8 +15,6 @@ export const useHttp = (url, dependencies) => {
 				if (!res.ok) {
 					setIsLoading(false);
 					setError("No city with this name!");
-					// return error;
-					// throw new Error("Failed to fetch!");
 				}
 				return res.json();
 			})
@@ -24,7 +22,7 @@ export const useHttp = (url, dependencies) => {
 				setFetchedData(data);
 				setIsLoading(false);
 			})
-	}, dependencies);
+	}, [...dependencies, url]);
 
 	return [isLoading, fetchedData, error];
 }

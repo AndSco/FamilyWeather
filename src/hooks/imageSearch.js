@@ -32,7 +32,7 @@ export const useSetupImage = (city, dependencies) => {
 					}	
 				})
 		}		
-	}, dependencies);
+	}, [...dependencies, city]);
 
 	return [isLoading, photoUrl, error];
 }

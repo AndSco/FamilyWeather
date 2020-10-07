@@ -80,8 +80,6 @@ const ForecastList = props => {
       .then(data => setCityList(data));
   }, []);
 
-  useEffect(() => console.log("cities", cities), [cities]);
-
   // To toggle search bar
   const [openSearch, setOpenSearch] = useState(false);
 

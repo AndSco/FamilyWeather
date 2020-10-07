@@ -1,126 +1,101 @@
 import React, { useState, useEffect } from "react";
 import { useHttp } from "../hooks/http";
 import { useSetupImage } from "../hooks/imageSearch";
-import { convertToCelsius, calculateWind, formatDate } from "../helper-functions/functions";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  convertToCelsius,
+  calculateWind,
+  formatDate
+} from "../helper-functions/functions";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Loading from "./Loading";
 import ErrorBox from "./Error";
 import MoreInfo from "./MoreInfo";
 
-
-
 const CityForecast = props => {
-	const { city, insertWeatherData, insertImageData } = props;
+  const { city, insertWeatherData, insertImageData } = props;
 
-	// Fetch forecast data w custom hook
-	const url = city.countryCode !== ""
-		?
-		`https://api.openweathermap.org/data/2.5/forecast?q=${city.name},${city.countryCode}&APPID=6c2959ac5f06da24a0df472b94e4fd35`
-		:
-		`https://api.openweathermap.org/data/2.5/forecast?q=${city.name}&APPID=6c2959ac5f06da24a0df472b94e4fd35`;
+  // Fetch forecast data w custom hook
+  const url =
+    city.countryCode !== ""
+      ? `https://api.openweathermap.org/data/2.5/forecast?q=${city.name},${city.countryCode}&APPID=6c2959ac5f06da24a0df472b94e4fd35`
+      : `https://api.openweathermap.org/data/2.5/forecast?q=${city.name}&APPID=6c2959ac5f06da24a0df472b94e4fd35`;
 
-	const [isLoading, forecastData, error] = useHttp(url, []);
-  const [currentData, setCurrentData] = useState(0); 
+  const [isLoading, forecastData, error] = useHttp(url, []);
+  const [currentData, setCurrentData] = useState(0);
 
-// Placing data in array of objects 
-	const cityData = city.weatherData
-		?
-		city.weatherData.city
-		:
-		null;
+  // Placing data in array of objects
+  const cityData = city.weatherData ? city.weatherData.city : null;
 
+  const weatherData = city.weatherData
+    ? city.weatherData.list.map(hourlyChunk => {
+        return {
+          main: hourlyChunk.main,
+          weather: hourlyChunk.weather,
+          wind: hourlyChunk.wind,
+          date: hourlyChunk.dt_txt
+        };
+      })
+    : null;
 
-	const weatherData = city.weatherData
-		?
-		city.weatherData.list.map(hourlyChunk => {
-				return {
-					main: hourlyChunk.main, 
-					weather: hourlyChunk.weather, 
-					wind: hourlyChunk.wind,
-					date: hourlyChunk.dt_txt
-				}
-			}
-		) 
-		: 
-		null;	
+  const currentWeather = city.weatherData ? weatherData[currentData] : null;
 
-
-		const currentWeather = city.weatherData 
-			?
-			weatherData[currentData]
-			:
-			null;
-	
-
-	useEffect(() => {
+  useEffect(() => {
     if (forecastData) insertWeatherData(city, forecastData);
   }, [forecastData, insertWeatherData, city]);
 
+  // FETCH PICTURE WITH NEW CUSTOM HOOK, conditionally defined if city has already an image or not (or is in starting stock)!
+  const [isPictureRequestLoading, pictureUrl, pictureError] = useSetupImage(
+    city,
+    []
+  );
 
-	// TO FETCH PICTURE - TeleportAPI (using same custom hook)
-	// const formattedCityName = city.name.split(" ").join("-").toLowerCase();
-	// const urlPicture = `https://api.teleport.org/api/urban_areas/slug:${formattedCityName}/images/`; // if city has custom image, don't search
-	
+  useEffect(() => {
+    insertImageData(city, pictureUrl);
+  }, [pictureUrl, city, insertImageData]);
 
-	// FETCH PICTURE WITH NEW CUSTOM HOOK, conditionally defined if city has already an image or not (or is in starting stock)!
-	const [isPictureRequestLoading, pictureUrl, pictureError] = useSetupImage(city, []);
+  // Helper functions
+  const moveForward = () => {
+    if (currentData >= 39) return;
+    setCurrentData(currentData + 1);
+  };
 
-	
-		
-	// Send the image URL to cities array of objects, and will be static background, 
-	// Do this only if its pictureUrl changes
-	useEffect(() => {
-		insertImageData(city, pictureUrl);
-	}, [pictureUrl, city, insertImageData]);
+  const moveBackward = () => {
+    if (currentData === 0) return;
+    setCurrentData(currentData - 1);
+  };
 
+  // DRAGGING!
 
+  const onDragStart = (e, element) => {
+    console.log("dragstart on city", element);
+    if (window.navigator.userAgent.indexOf("Edge") > -1) {
+      e.dataTransfer.setData(`text/plain`, element);
+    } else {
+      e.dataTransfer.setData("cityMoved", element);
+    }
+  };
 
-	// Helper functions
-	const moveForward = () => {
-		if (currentData >= 39) return; // max length of time chunks!
-		setCurrentData(currentData + 1);
-	}
+  const onDragOver = e => {
+    e.preventDefault();
+  };
 
-	const moveBackward = () => {
-		if (currentData === 0) return;
-		setCurrentData(currentData - 1);
-	}
+  const onDrop = (e, cat) => {
+    const cityToMove =
+      !window.navigator.userAgent.indexOf("Edge") > -1
+        ? e.dataTransfer.getData("cityMoved")
+        : e.dataTransfer.getData("text");
+    const cityToMoveTo = e.currentTarget.className.slice(9);
+    props.handleDragging(cityToMove, cityToMoveTo);
+  };
 
+  // To open-close More info panel!
+  const [moreInfo, setMoreInfo] = useState(false);
 
+  const closeMoreInfo = () => {
+    setMoreInfo(false);
+  };
 
-
-	// DRAGGING!
-
-	const onDragStart = (e, element) => {
-		console.log("dragstart on city", element);
-		if (window.navigator.userAgent.indexOf("Edge") > -1) {
-			e.dataTransfer.setData(`text/plain`, element);
-		}
-		else {
-			e.dataTransfer.setData("cityMoved", element)
-		};
-	}
-
-	const onDragOver = (e) => {
-	    e.preventDefault();
-	}
-
-	const onDrop = (e, cat) => {
-		const cityToMove = !window.navigator.userAgent.indexOf("Edge") > -1 ? e.dataTransfer.getData("cityMoved") : e.dataTransfer.getData("text");
-		const cityToMoveTo = e.currentTarget.className.slice(9);
-		props.handleDragging(cityToMove, cityToMoveTo);
-	}
-
-
-	// To open-close More info panel!
-	const [moreInfo, setMoreInfo] = useState(false);
-
-	const closeMoreInfo = () => {
-		setMoreInfo(false);
-	}
-
-
-	return !isLoading && forecastData && !error ? (
+  return !isLoading && forecastData && !error ? (
     <div
       className={`forecast ${city.name}`}
       style={
@@ -220,6 +195,6 @@ const CityForecast = props => {
   ) : error ? (
     <ErrorBox error={error} />
   ) : null;
-}
+};
 
 export default CityForecast;

@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { convertToCelsius, calculateWind } from "../helper-functions/functions";
 
 const MoreInfo = props => {
-	const [imageUrl, setImageUrl] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
-	const handleInput = (e) => {
-		setImageUrl(e.target.value);
-	}
+  const handleInput = e => {
+    setImageUrl(e.target.value);
+  };
 
-	return (
+  return (
     <div className="more-info">
       <div className="more-info-details">
         <h4>CURRENT OBSERVATIONS FOR {props.city.name.toUpperCase()}</h4>
@@ -48,7 +48,7 @@ const MoreInfo = props => {
             placeholder="ENTER PIC URL!"
             onChange={e => handleInput(e)}
           ></input>
-          <button style={{cursor: "pointer"}}>UPLOAD</button>
+          <button style={{ cursor: "pointer" }}>UPLOAD</button>
         </form>
         <FontAwesomeIcon
           icon="minus-circle"
@@ -60,6 +60,6 @@ const MoreInfo = props => {
       </div>
     </div>
   );
-}
+};
 
-export default MoreInfo; 
+export default MoreInfo;

@@ -39,6 +39,7 @@ library.add(
 );
 
 function App() {
+  console.log("COPY!!");
   return (
     <div className="App">
       <Grid />
